@@ -74,6 +74,11 @@ body.lang-en .notif-title{line-height:1.35}
 .btn-notif{background:var(--green);color:#fff;border:2px solid var(--gold);border-radius:12px;padding:12px 22px;font-size:17.5px;font-weight:700;min-height:54px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;gap:8px;line-height:1.5;max-width:100%;flex-wrap:wrap}
 .btn-notif:active{background:var(--green-dark)}
 .btn-notif .btn-notif-en{font-family:"Noto Sans",system-ui,sans-serif}
+.btn-notif-settings{background:var(--gold);color:#241c02;border:2px solid var(--green);border-radius:12px;padding:12px 22px;font-size:17.5px;font-weight:700;min-height:54px;cursor:pointer;font-family:inherit;display:flex;width:fit-content;align-items:center;justify-content:center;gap:8px;line-height:1.5;max-width:100%;flex-wrap:wrap;margin:12px auto 0}
+.btn-notif-settings[hidden]{display:none !important}
+.btn-notif-settings:active{filter:brightness(.92)}
+.btn-notif-settings .btn-notif-settings-en{font-family:"Noto Sans",system-ui,sans-serif}
+@media(max-width:560px){.btn-notif-settings{width:100%;font-size:16.5px;padding:11px 14px}}
 .notif-status{margin:12px auto 0;max-width:640px;border-radius:10px;padding:10px 14px;font-size:15.5px;line-height:1.8;text-align:center}
 .notif-status.ok{background:#e2f2e4;color:#0b4d2e;border:1.5px solid var(--green-mid)}
 .notif-status.blocked{background:#fde8e8;color:#8a1414;border:1.5px solid var(--red)}
@@ -261,6 +266,7 @@ footer{border-top:1px solid var(--line);margin-top:26px;padding:18px 0 34px;colo
     </p>
     <button type="button" id="notifBtn" class="btn-notif">🔔 <span>نوٹیفکیشن آن کریں</span> <span aria-hidden="true">/</span> <span class="btn-notif-en">Turn on Notifications</span></button>
     <p id="notifStatus" class="notif-status" role="status" aria-live="polite" hidden></p>
+    <button type="button" id="notifSettingsBtn" class="btn-notif-settings" hidden>⚙️ <span>نوٹیفکیشن سیٹنگز کھولیں</span> <span aria-hidden="true">/</span> <span class="btn-notif-settings-en">Open Notification Settings</span></button>
   </section>
 
   <section class="hero">
@@ -582,17 +588,80 @@ footer{border-top:1px solid var(--line);margin-top:26px;padding:18px 0 34px;colo
   /* ---------- Notifications ---------- */
   var NOTIF_MSG = {
     granted: "✅ شکریہ! نوٹیفکیشن آن ہو گئے ہیں۔ اب جب بھی نئی خبر پوسٹ ہو گی، آپ کے فون پر نوٹیفکیشن آ جائے گا۔\nThank you! Notifications are ON. Now, whenever a new story is posted, a notification will arrive on your phone.",
-    denied: "⚠️ نوٹیفکیشن بند (Block) ہیں۔ اپنے براؤزر کی سیٹنگز میں جا کر اس ویب سائٹ کے لیے Notifications کو Allow کریں، پھر یہ بٹن دوبارہ دبائیں۔\nNotifications are blocked. Please open your browser settings, allow Notifications for this website, then tap this button again.",
+    denied: "⚠️ نوٹیفکیشن بند (Block) ہیں۔ نیچے والا بٹن دبائیں — اس ویب سائٹ کی نوٹیفکیشن سیٹنگز خود بخود کھل جائیں گی، وہاں سے Allow کر دیں۔\nNotifications are blocked. Tap the button below — the notification settings for this website will open automatically, turn Allow on there.",
     dismissed: "ℹ️ ابھی نوٹیفکیشن آن نہیں ہوئے۔ بٹن دوبارہ دبائیں اور پھر Allow پر ٹیپ کریں۔\nNotifications are not on yet. Tap the button again, then tap Allow.",
     unsupported: "⚠️ اس براؤزر یا ایپ میں نوٹیفکیشن کی سہولت موجود نہیں ہے۔ یہی ویب سائٹ فون کے Chrome براؤزر میں کھول کر دوبارہ کوشش کریں۔\nThis browser or app does not support notifications. Please open this same website in the Chrome browser and try again."
   };
   var notifStatusEl = document.getElementById("notifStatus");
+  var notifSettingsBtn = document.getElementById("notifSettingsBtn");
   function showNotifStatus(kind, msgKey){
     if(!notifStatusEl) return;
     notifStatusEl.className = "notif-status " + kind;
     notifStatusEl.textContent = NOTIF_MSG[msgKey] || "";
     notifStatusEl.style.whiteSpace = "pre-line";
     notifStatusEl.hidden = false;
+    if(notifSettingsBtn){
+      notifSettingsBtn.hidden = !(msgKey === "denied");
+    }
+  }
+  function openNotificationSettings(){
+    var origin = "";
+    try { origin = window.location.origin || (window.location.protocol + "//" + window.location.host); } catch(e){}
+    var ua = navigator.userAgent || "";
+    var isAndroid = /Android/i.test(ua);
+    var isFirefox = /Firefox/i.test(ua);
+    var isEdge = /Edg\//i.test(ua);
+    var isOpera = /OPR\/|Opera/i.test(ua);
+    var isChrome = (/Chrome|Chromium|CriOS/i.test(ua) && !isEdge && !isOpera);
+    function tryOpen(url){
+      try {
+        var w = window.open(url, "_blank");
+        return !!w;
+      } catch(e){ return false; }
+    }
+    function tryNavigate(url){
+      try { window.location.href = url; } catch(e){}
+    }
+    if(isEdge){
+      tryOpen("edge://settings/content/siteDetails?site=" + encodeURIComponent(origin));
+      tryOpen("edge://settings/content/notifications");
+      return;
+    }
+    if(isFirefox){
+      tryOpen("about:preferences#privacy");
+      return;
+    }
+    if(isChrome && isAndroid){
+      // Android Chrome: open Chrome's app notification settings in the system Settings app,
+      // which is where notification permission for sites is controlled.
+      tryNavigate("intent:#Intent;action=android.settings.APP_NOTIFICATION_SETTINGS;S.android.provider.extra.APP_PACKAGE=com.android.chrome;end");
+      setTimeout(function(){
+        tryOpen("chrome://settings/content/siteDetails?site=" + encodeURIComponent(origin));
+      }, 700);
+      return;
+    }
+    if(isChrome){
+      tryOpen("chrome://settings/content/siteDetails?site=" + encodeURIComponent(origin));
+      tryOpen("chrome://settings/content/notifications");
+      return;
+    }
+    if(isOpera){
+      tryOpen("opera://settings/content/siteDetails?site=" + encodeURIComponent(origin));
+      return;
+    }
+    // Safari / other browsers: try the Chromium-style address first, then fall back
+    // to re-requesting permission so the browser can surface its own prompt/settings.
+    if(!tryOpen("chrome://settings/content/siteDetails?site=" + encodeURIComponent(origin))){
+      if("Notification" in window && typeof Notification.requestPermission === "function"){
+        try {
+          var p = Notification.requestPermission();
+          if(p && typeof p.then === "function"){ p.then(function(perm){ handleNotifResult(perm); }).catch(function(){}); }
+        } catch(e){}
+      }
+    }
+  }
+  if(notifSettingsBtn){
+    notifSettingsBtn.addEventListener("click", openNotificationSettings);
   }
   function handleNotifResult(permission){
     if(permission === "granted"){
@@ -616,6 +685,8 @@ footer{border-top:1px solid var(--line);margin-top:26px;padding:18px 0 34px;colo
   if(notifBtn){
     if("Notification" in window && Notification.permission === "granted"){
       showNotifStatus("ok", "granted");
+    } else if("Notification" in window && Notification.permission === "denied"){
+      showNotifStatus("blocked", "denied");
     }
     notifBtn.addEventListener("click", function(){
       if(!("Notification" in window)){
