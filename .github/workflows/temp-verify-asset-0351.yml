@@ -1,0 +1,31 @@
+name: Temp verify release asset 0351
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download and verify release asset
+        run: |
+          set -e
+          curl -sL -o /tmp/haq.html https://github.com/haqkiawazpk/haq-ki-awaz/releases/download/website-nov2026/haq-ki-awaz.html
+          echo "bytes=$(wc -c < /tmp/haq.html)"
+          echo "sha256=$(sha256sum /tmp/haq.html | cut -d' ' -f1)"
+          echo "articles=$(grep -o '<article' /tmp/haq.html | wc -l)"
+          echo "follow links=$(grep -o 'https://www.facebook.com/haq.ki.awaz.pakistan' /tmp/haq.html | wc -l)"
+          echo "petrol Rs346 count=$(grep -o 'Rs346' /tmp/haq.html | wc -l)"
+          echo "diesel Rs378 count=$(grep -o 'Rs378' /tmp/haq.html | wc -l)"
+          echo "self-post count=$(grep -o 'اپنی خبر خود لگائیں' /tmp/haq.html | wc -l)"
+          FIRST7=$(grep -o '<article[^>]*id="[^"]*"' /tmp/haq.html | sed 's/.*id="//; s/"$//' | head -7 | paste -sd' ' -)
+          echo "first7=$FIRST7"
+          test "$(wc -c < /tmp/haq.html)" = "21730911"
+          test "$(sha256sum /tmp/haq.html | cut -d' ' -f1)" = "1e9cadf6308f5c043e7f41495973dbe9ba8a75e8202767e9e1f92208cd841c7d"
+          test "$(grep -o '<article' /tmp/haq.html | wc -l)" = "269"
+          test "$(grep -o 'https://www.facebook.com/haq.ki.awaz.pakistan' /tmp/haq.html | wc -l)" = "270"
+          test "$(grep -o 'اپنی خبر خود لگائیں' /tmp/haq.html | wc -l)" = "0"
+          test "$FIRST7" = "peshawar-encroachment-school-video-nov2026 punjab-cart-vendor-video-nov2026 gcc-railway-agreement-nov2026 ecp-lg-nominations-extended-nov2026 karachi-sohrab-goth-fire-video-nov2026 swat-lake-remains-nov2026 bangladesh-garment-protest-video-nov2026"
+          grep -q 'Rs346' /tmp/haq.html
+          grep -q 'Rs378' /tmp/haq.html
+          echo VERIFIED
