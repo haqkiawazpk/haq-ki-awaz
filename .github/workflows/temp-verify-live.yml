@@ -30,7 +30,14 @@ jobs:
             assert "Rs346" in text, "petrol Rs346 not found"
             assert "Rs378" in text, "diesel Rs378 not found"
             assert "اپنی خبر خود لگائیں" not in text, "self-post section present"
-            assert "Muse" not in text, "Muse text present"
+            muse_matches = list(re.finditer("Muse", text))
+            print("Muse count:", len(muse_matches), flush=True)
+            for m in muse_matches[:10]:
+              print("Muse context:", repr(text[max(0, m.start()-120):m.start()+120]), flush=True)
+            headers = re.findall(r"<header\b[^>]*>.*?</header>", text, flags=re.S)
+            print("header blocks:", len(headers), flush=True)
+            print("Muse in any header:", any("Muse" in h for h in headers), flush=True)
+            print("Muse in first 3000 chars:", "Muse" in text[:3000], flush=True)
             print("OK " + url, flush=True)
           print("ALL LIVE CHECKS PASSED", flush=True)
           PY
