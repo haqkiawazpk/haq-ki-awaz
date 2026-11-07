@@ -1,0 +1,24 @@
+name: Temp verify release asset followfix
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download and hash haq-ki-awaz.html
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          rel=$(gh api repos/${{ github.repository }}/releases/tags/website-nov2026 --jq '.id')
+          url=$(gh api repos/${{ github.repository }}/releases/$rel/assets --paginate --jq -r '.[] | select(.name=="haq-ki-awaz.html") | .browser_download_url')
+          echo "url: $url"
+          curl -L -o /tmp/haq.html "$url"
+          ls -l /tmp/haq.html
+          sha256sum /tmp/haq.html
+          grep -c 'facebook.com/haq.ki.awaz.pakistan' /tmp/haq.html || true
+          grep -c 'facebook.com/61595962084268' /tmp/haq.html || echo 'old link count 0'
+          test "$(sha256sum /tmp/haq.html | cut -d' ' -f1)" = '0aa950dca13d60df2f2e9699b1dcb9c07e06742a91ce7572acfec8f0ff613573'
+          echo 'SHA256 MATCHES EXPECTED'
