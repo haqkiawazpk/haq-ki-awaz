@@ -1,0 +1,25 @@
+name: Temp verify release asset
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download asset and check SHA-256
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          mkdir -p /tmp/verify
+          gh release download website-nov2026 -R haqkiawazpk/haq-ki-awaz -p haq-ki-awaz.html -D /tmp/verify
+          ls -l /tmp/verify/haq-ki-awaz.html
+          stat -c 'size=%s' /tmp/verify/haq-ki-awaz.html
+          sha256sum /tmp/verify/haq-ki-awaz.html
+          echo "expected=e38e1fa914033c9922c84147303d4db1ef4d8498f434556102d2a559b5a118ee"
+          ACTUAL=$(sha256sum /tmp/verify/haq-ki-awaz.html | cut -d' ' -f1)
+          echo "actual=$ACTUAL"
+          test "$ACTUAL" = "e38e1fa914033c9922c84147303d4db1ef4d8498f434556102d2a559b5a118ee"
+          echo "article tags: $(grep -o '<article' /tmp/verify/haq-ki-awaz.html | wc -l)"
+          echo "SHA-256 MATCH"
