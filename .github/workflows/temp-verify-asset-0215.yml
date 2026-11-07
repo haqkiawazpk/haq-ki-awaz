@@ -1,0 +1,26 @@
+name: Temp verify release asset 0215
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify new release asset sha256 and size
+        run: |
+          set -e
+          curl -L -o /tmp/haq-ki-awaz.html https://github.com/haqkiawazpk/haq-ki-awaz/releases/download/website-nov2026/haq-ki-awaz.html
+          echo "bytes:"
+          wc -c /tmp/haq-ki-awaz.html
+          echo "sha256:"
+          sha256sum /tmp/haq-ki-awaz.html
+          echo "expected bytes 21609970"
+          echo "expected sha256 07b4e7b6ded4e17a9e0a9d0547d3f511c4148bc42fd3a66444c3c5afb8c51196"
+          test "$(wc -c < /tmp/haq-ki-awaz.html)" = "21609970"
+          test "$(sha256sum /tmp/haq-ki-awaz.html | cut -d' ' -f1)" = "07b4e7b6ded4e17a9e0a9d0547d3f511c4148bc42fd3a66444c3c5afb8c51196"
+          echo "rlabs count:"
+          grep -o 'rlabs-silicon-valley-award-nov2026' /tmp/haq-ki-awaz.html | wc -l
+          echo "rubio count:"
+          grep -o 'rubio-g7-paris-nov2026' /tmp/haq-ki-awaz.html | wc -l
+          echo "OK asset verified"
