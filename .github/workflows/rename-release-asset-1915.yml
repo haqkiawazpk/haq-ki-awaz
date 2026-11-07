@@ -1,0 +1,21 @@
+name: Rename release asset before 1915 update
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  rename:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rename haq-ki-awaz.html release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          RELEASE_ID=$(gh api repos/haqkiawazpk/haq-ki-awaz/releases/tags/website-nov2026 --jq .id)
+          echo "release_id=$RELEASE_ID"
+          ASSET_ID=$(gh api "repos/haqkiawazpk/haq-ki-awaz/releases/$RELEASE_ID/assets?per_page=100" --jq '.[] | select(.name=="haq-ki-awaz.html") | .id')
+          echo "asset_id=$ASSET_ID"
+          test -n "$ASSET_ID"
+          gh api -X PATCH "repos/haqkiawazpk/haq-ki-awaz/releases/assets/$ASSET_ID" -f name="haq-ki-awaz-before-1915-7nov2026.html" --jq '{id, name, size}'
+          gh api "repos/haqkiawazpk/haq-ki-awaz/releases/$RELEASE_ID/assets?per_page=100" --jq '.[] | select(.name=="haq-ki-awaz-before-1915-7nov2026.html" or .name=="haq-ki-awaz.html") | {id, name, size}'
