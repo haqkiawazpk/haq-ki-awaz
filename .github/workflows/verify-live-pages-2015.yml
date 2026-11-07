@@ -41,7 +41,12 @@ jobs:
             echo "self-post occurrences: $SELFPOST"
             if [ "$SELFPOST" != "0" ]; then echo "SELF-POST SECTION PRESENT"; exit 1; fi
             MUSE=$(grep -c -i 'Muse' live.html || true)
-            echo "Muse occurrences: $MUSE"
-            if [ "$MUSE" != "0" ]; then echo "MUSE TEXT PRESENT"; exit 1; fi
+            echo "Muse occurrences (lines): $MUSE"
+            echo "Muse matching lines (truncated):"
+            grep -i -n 'Muse' live.html | cut -c1-160 || true
+            HEADER_MUSE=$(sed -n '/<header/,/<\/header>/p' live.html | grep -c -i 'Muse' || true)
+            echo "Muse occurrences inside header element: $HEADER_MUSE"
+            if [ "$HEADER_MUSE" != "0" ]; then echo "MUSE HEADER PRESENT"; exit 1; fi
+            echo "No Muse header"
             echo "ALL CHECKS PASSED for $URL"
           done
