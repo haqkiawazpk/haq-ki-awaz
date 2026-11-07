@@ -1,0 +1,19 @@
+name: Verify release asset SHA256
+on:
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download release asset and verify SHA256
+        run: |
+          set -e
+          curl -L -o haq-ki-awaz.html "https://github.com/haqkiawazpk/haq-ki-awaz/releases/download/website-nov2026/haq-ki-awaz.html"
+          ls -l haq-ki-awaz.html
+          sha256sum haq-ki-awaz.html
+          EXPECTED="6986badbd1946674e2cac67083baae7a9aa2870de6895b36f4d39aa3f8decb76"
+          ACTUAL=$(sha256sum haq-ki-awaz.html | awk '{print $1}')
+          echo "Expected: $EXPECTED"
+          echo "Actual:   $ACTUAL"
+          if [ "$ACTUAL" = "$EXPECTED" ]; then echo "SHA256 MATCHES EXPECTED"; else echo "SHA256 MISMATCH"; exit 1; fi
+          echo "Anchors: $(grep -o 'khawaja-asif-maryam-salik-row-nov2026' haq-ki-awaz.html | wc -l) khawaja, $(grep -o 'krakow-shooting-five-killed-nov2026' haq-ki-awaz.html | wc -l) krakow"
