@@ -1,0 +1,25 @@
+name: Verify live Pages 1715
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify both live URLs separately
+        run: |
+          for URL in "https://haqkiawazpk.github.io/haq-ki-awaz/" "https://haqkiawazpk.github.io/"; do
+            echo "=== $URL ==="
+            CODE=$(curl -s -o /tmp/page.html -w "%{http_code}" -L "$URL")
+            echo "http_code=$CODE"
+            echo "bytes=$(wc -c < /tmp/page.html)"
+            sha256sum /tmp/page.html
+            echo "article_count=$(grep -o '<article' /tmp/page.html | wc -l)"
+            echo "first_ids:"
+            grep -o 'id="[^"]*nov2026"' /tmp/page.html | head -5
+            echo "self_post_count=$(grep -o 'اپنی خبر خود لگائیں' /tmp/page.html | wc -l)"
+            echo "petrol_Rs346=$(grep -o 'Rs 346' /tmp/page.html | wc -l)"
+            echo "diesel_Rs378=$(grep -o 'Rs 378' /tmp/page.html | wc -l)"
+            echo "muse_count=$(grep -o 'Muse' /tmp/page.html | wc -l)"
+          done
