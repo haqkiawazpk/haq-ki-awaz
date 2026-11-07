@@ -21,7 +21,7 @@ jobs:
             ACTUAL=$(sha256sum live.html | awk '{print $1}')
             echo "SHA256: $ACTUAL"
             if [ "$ACTUAL" = "$EXPECTED" ]; then echo "SHA256 MATCHES EXPECTED"; else echo "SHA256 MISMATCH"; exit 1; fi
-            FIRST2=$(grep -o 'id="[^"]*"' live.html | head -2 | tr '\n' ' ')
+            FIRST2=$(grep -o 'id="[^"]*"' live.html | awk 'NR<=2' | tr '\n' ' ')
             echo "First two ids: $FIRST2"
             if [ "$FIRST2" = 'id="nepra-industrial-tariff-rs2530-nov2026" id="pope-leo-south-america-bridge-divides-nov2026" ' ]; then echo "ANCHORS FIRST IN ORDER"; else echo "ANCHOR ORDER WRONG"; exit 1; fi
             CARDS=$(grep -o '<article' live.html | wc -l)
