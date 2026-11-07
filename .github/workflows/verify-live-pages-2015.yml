@@ -1,0 +1,39 @@
+name: Verify live Pages 2015
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify both live Pages addresses
+        run: |
+          set -euo pipefail
+          EXPECTED="a30364d50fa82f3ed01c80416e604719eec9500474c933e82fd89d2fd206f0b8"
+          for URL in "https://haqkiawazpk.github.io/haq-ki-awaz/" "https://haqkiawazpk.github.io/"; do
+            echo "===== $URL ====="
+            STATUS=$(curl -s -o live.html -w "%{http_code}" "$URL")
+            echo "HTTP status: $STATUS"
+            if [ "$STATUS" != "200" ]; then echo "HTTP STATUS NOT 200"; exit 1; fi
+            SIZE=$(wc -c < live.html)
+            echo "Byte size: $SIZE"
+            ACTUAL=$(sha256sum live.html | awk '{print $1}')
+            echo "SHA256: $ACTUAL"
+            if [ "$ACTUAL" = "$EXPECTED" ]; then echo "SHA256 MATCHES EXPECTED"; else echo "SHA256 MISMATCH"; exit 1; fi
+            FIRST2=$(grep -o 'id="[^"]*"' live.html | head -2 | tr '\n' ' ')
+            echo "First two ids: $FIRST2"
+            if [ "$FIRST2" = 'id="nepra-industrial-tariff-rs2530-nov2026" id="pope-leo-south-america-bridge-divides-nov2026" ' ]; then echo "ANCHORS FIRST IN ORDER"; else echo "ANCHOR ORDER WRONG"; exit 1; fi
+            CARDS=$(grep -o '<article' live.html | wc -l)
+            echo "Article cards: $CARDS"
+            if [ "$CARDS" != "250" ]; then echo "ARTICLE COUNT NOT 250"; exit 1; fi
+            grep -q 'Rs 346' live.html && echo "Fuel petrol Rs346 present"
+            grep -q 'Rs 378' live.html && echo "Fuel diesel Rs378 present"
+            SELFPOST=$(grep -c -i 'self-post' live.html || true)
+            echo "self-post occurrences: $SELFPOST"
+            if [ "$SELFPOST" != "0" ]; then echo "SELF-POST SECTION PRESENT"; exit 1; fi
+            MUSE=$(grep -c -i 'Muse' live.html || true)
+            echo "Muse occurrences: $MUSE"
+            if [ "$MUSE" != "0" ]; then echo "MUSE TEXT PRESENT"; exit 1; fi
+            echo "ALL CHECKS PASSED for $URL"
+          done
