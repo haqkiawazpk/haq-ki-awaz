@@ -1,0 +1,22 @@
+name: Temp rename release asset followfix
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  rename:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rename haq-ki-awaz.html asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          rel=$(gh api repos/${{ github.repository }}/releases/tags/website-nov2026 --jq '.id')
+          echo "release id: $rel"
+          asset_id=$(gh api repos/${{ github.repository }}/releases/$rel/assets --paginate --jq '.[] | select(.name=="haq-ki-awaz.html") | .id')
+          echo "asset id: $asset_id"
+          test -n "$asset_id"
+          gh api -X PATCH repos/${{ github.repository }}/releases/assets/$asset_id -f name='haq-ki-awaz-before-followfix-8nov2026.html' --jq '{id, name, size, updated_at}'
+          echo "After rename:"
+          gh api repos/${{ github.repository }}/releases/$rel/assets --paginate --jq '.[] | select(.name | test("haq-ki-awaz")) | {name, size}'
