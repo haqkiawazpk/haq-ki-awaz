@@ -10,6 +10,7 @@ jobs:
       - name: Download and verify release asset
         run: |
           set -e
+          set -x
           curl -sL -o /tmp/haq.html https://github.com/haqkiawazpk/haq-ki-awaz/releases/download/website-nov2026/haq-ki-awaz.html
           echo "bytes=$(wc -c < /tmp/haq.html)"
           echo "sha256=$(sha256sum /tmp/haq.html | cut -d ' ' -f1)"
@@ -17,7 +18,14 @@ jobs:
           echo "follow_links=$(grep -o 'https://www.facebook.com/haq.ki.awaz.pakistan' /tmp/haq.html | wc -l)"
           echo "selfpost_count=$(grep -o 'اپنی خبر خود لگائیں' /tmp/haq.html | wc -l)"
           echo "new_card=$(grep -c 'karachi-uturn-mayor-wahab-nov2026' /tmp/haq.html)"
-          FIRST7=$(grep -o '<article[^>]*id="[^"]*"' /tmp/haq.html | sed 's/.*id="//; s/"$//' | head -7 | paste -sd' ' -)
+          echo "new_card_context=$(grep -o '.\{0,80\}karachi-uturn-mayor-wahab-nov2026.\{0,80\}' /tmp/haq.html | head -1)"
+          FIRST7=$(python3 - <<'PY'
+          import re
+          h=open('/tmp/haq.html', encoding='utf-8', errors='ignore').read()
+          ids=re.findall(r'<article[^>]*?id=["\']([^"\']+)["\']', h, flags=re.S)
+          print(' '.join(ids[:7]))
+          PY
+          )
           echo "first7=$FIRST7"
           test "$(wc -c < /tmp/haq.html)" = "21734027"
           test "$(sha256sum /tmp/haq.html | cut -d ' ' -f1)" = "9fa5749dd6a95082a8eee2698e6f7fe55d3146a7554d74611d3d5ea3c1313a85"
