@@ -1,0 +1,24 @@
+name: Verify release asset 2015
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show release asset record from API
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl -sS -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/haqkiawazpk/haq-ki-awaz/releases/434577918/assets?per_page=100" | jq '.[] | select(.name=="haq-ki-awaz.html") | {id, name, size, digest}'
+      - name: Download asset and verify sha256
+        run: |
+          set -euo pipefail
+          curl -sSL -o haq-ki-awaz.html "https://github.com/haqkiawazpk/haq-ki-awaz/releases/download/website-nov2026/haq-ki-awaz.html"
+          ls -l haq-ki-awaz.html
+          ACTUAL=$(sha256sum haq-ki-awaz.html | awk '{print $1}')
+          EXPECTED="a30364d50fa82f3ed01c80416e604719eec9500474c933e82fd89d2fd206f0b8"
+          echo "Actual sha256: $ACTUAL"
+          echo "Expected sha256: $EXPECTED"
+          if [ "$ACTUAL" = "$EXPECTED" ]; then echo "SHA256 MATCHES EXPECTED"; else echo "SHA256 MISMATCH"; exit 1; fi
