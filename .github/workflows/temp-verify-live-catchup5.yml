@@ -58,8 +58,8 @@ jobs:
               assert html.count('<article')==270, label
               assert html.count('karachi-uturn-mayor-wahab-nov2026')>=1, label
               assert html.count('اپنی خبر خود لگائیں')==0, label
-              assert len(fb)>=263, label
-              assert len(allfb)==len(fb), label
+              assert len(fb)==271, label
+              assert all(l['href']==FB or l['href'].startswith(FB+'/') for l in allfb), label
               assert all(l['href']==FB for l in follow), label
           print('CHECK DONE - both live sites verified')
           PY
