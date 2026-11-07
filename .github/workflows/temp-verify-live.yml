@@ -1,0 +1,68 @@
+name: Temp verify live pages
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check-project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check project Pages address
+        run: |
+          set -e
+          URL="https://haqkiawazpk.github.io/haq-ki-awaz/"
+          echo "URL=$URL"
+          curl -sS -D /tmp/h1.txt -o /tmp/p1.html -w "http=%{http_code}\n" "$URL"
+          cat /tmp/h1.txt
+          test "$(head -1 /tmp/h1.txt | awk '{print $2}')" = "200"
+          if grep -qi muse /tmp/h1.txt; then echo "MUSE HEADER FOUND"; exit 1; fi
+          echo "no Muse header"
+          stat -c 'size=%s' /tmp/p1.html
+          sha256sum /tmp/p1.html
+          test "$(sha256sum /tmp/p1.html | cut -d' ' -f1)" = "e38e1fa914033c9922c84147303d4db1ef4d8498f434556102d2a559b5a118ee"
+          echo "article tags: $(grep -o '<article' /tmp/p1.html | wc -l)"
+          test "$(grep -o '<article' /tmp/p1.html | wc -l)" = "256"
+          FIRST=$(grep -b -o 'fazl-34-years-no-court-case-nov2026' /tmp/p1.html | head -1 | cut -d: -f1)
+          SECOND=$(grep -b -o 'new-zealand-election-no-winner-nov2026' /tmp/p1.html | head -1 | cut -d: -f1)
+          echo "first anchor byte=$FIRST second anchor byte=$SECOND"
+          test -n "$FIRST"
+          test -n "$SECOND"
+          test "$FIRST" -lt "$SECOND"
+          echo "self-post count: $(grep -i -o 'self-post' /tmp/p1.html | wc -l)"
+          test "$(grep -i -o 'self-post' /tmp/p1.html | wc -l)" = "0"
+          grep -q 'Rs346' /tmp/p1.html
+          grep -q 'Rs378' /tmp/p1.html
+          grep -q '7 Nov 2026' /tmp/p1.html
+          echo "fuel: petrol Rs346 count=$(grep -o 'Rs346' /tmp/p1.html | wc -l) diesel Rs378 count=$(grep -o 'Rs378' /tmp/p1.html | wc -l)"
+          echo "PROJECT PAGE OK"
+  check-root:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check root Pages address
+        run: |
+          set -e
+          URL="https://haqkiawazpk.github.io/"
+          echo "URL=$URL"
+          curl -sS -D /tmp/h2.txt -o /tmp/p2.html -w "http=%{http_code}\n" "$URL"
+          cat /tmp/h2.txt
+          test "$(head -1 /tmp/h2.txt | awk '{print $2}')" = "200"
+          if grep -qi muse /tmp/h2.txt; then echo "MUSE HEADER FOUND"; exit 1; fi
+          echo "no Muse header"
+          stat -c 'size=%s' /tmp/p2.html
+          sha256sum /tmp/p2.html
+          test "$(sha256sum /tmp/p2.html | cut -d' ' -f1)" = "e38e1fa914033c9922c84147303d4db1ef4d8498f434556102d2a559b5a118ee"
+          echo "article tags: $(grep -o '<article' /tmp/p2.html | wc -l)"
+          test "$(grep -o '<article' /tmp/p2.html | wc -l)" = "256"
+          FIRST=$(grep -b -o 'fazl-34-years-no-court-case-nov2026' /tmp/p2.html | head -1 | cut -d: -f1)
+          SECOND=$(grep -b -o 'new-zealand-election-no-winner-nov2026' /tmp/p2.html | head -1 | cut -d: -f1)
+          echo "first anchor byte=$FIRST second anchor byte=$SECOND"
+          test -n "$FIRST"
+          test -n "$SECOND"
+          test "$FIRST" -lt "$SECOND"
+          echo "self-post count: $(grep -i -o 'self-post' /tmp/p2.html | wc -l)"
+          test "$(grep -i -o 'self-post' /tmp/p2.html | wc -l)" = "0"
+          grep -q 'Rs346' /tmp/p2.html
+          grep -q 'Rs378' /tmp/p2.html
+          grep -q '7 Nov 2026' /tmp/p2.html
+          echo "fuel: petrol Rs346 count=$(grep -o 'Rs346' /tmp/p2.html | wc -l) diesel Rs378 count=$(grep -o 'Rs378' /tmp/p2.html | wc -l)"
+          echo "ROOT PAGE OK"
