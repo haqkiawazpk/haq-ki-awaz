@@ -13,9 +13,11 @@ jobs:
         run: |
           set -euo pipefail
           rel=$(gh api repos/${{ github.repository }}/releases/tags/website-nov2026 --jq '.id')
-          url=$(gh api repos/${{ github.repository }}/releases/$rel/assets --paginate --jq -r '.[] | select(.name=="haq-ki-awaz.html") | .browser_download_url')
-          echo "url: $url"
-          curl -L -o /tmp/haq.html "$url"
+          echo "release id: $rel"
+          asset_id=$(gh api repos/${{ github.repository }}/releases/$rel/assets --paginate --jq '.[] | select(.name=="haq-ki-awaz.html") | .id')
+          echo "asset id: $asset_id"
+          test -n "$asset_id"
+          gh api -H 'Accept: application/octet-stream' repos/${{ github.repository }}/releases/assets/$asset_id > /tmp/haq.html
           ls -l /tmp/haq.html
           sha256sum /tmp/haq.html
           grep -c 'facebook.com/haq.ki.awaz.pakistan' /tmp/haq.html || true
