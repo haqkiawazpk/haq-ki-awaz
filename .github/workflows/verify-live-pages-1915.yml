@@ -1,0 +1,32 @@
+name: Verify live Pages 1915
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify both live Pages addresses
+        run: |
+          set -e
+          EXPECTED_SHA="a9177d032aea53b9f716f5580f8da65efa6eec4e902e37ca222b9dc16915fc65"
+          for URL in "https://haqkiawazpk.github.io/haq-ki-awaz/" "https://haqkiawazpk.github.io/"; do
+            echo "=== $URL ==="
+            CODE=$(curl -s -o /tmp/live.html -w "%{http_code}" -L "$URL")
+            echo "http_code=$CODE"
+            test "$CODE" = "200"
+            wc -c /tmp/live.html
+            sha256sum /tmp/live.html
+            test "$(sha256sum /tmp/live.html | cut -d' ' -f1)" = "$EXPECTED_SHA"
+            echo "SHA256 MATCHES EXPECTED"
+            echo "articles=$(grep -o '<article' /tmp/live.html | wc -l)"
+            FIRST_US=$(grep -b -o "pakistan-us-ties-beyond-trump-nov2026" /tmp/live.html | head -1 | cut -d: -f1)
+            FIRST_GAZA=$(grep -b -o "gaza-rain-floods-tents-nov2026" /tmp/live.html | head -1 | cut -d: -f1)
+            echo "first_us_byte=$FIRST_US first_gaza_byte=$FIRST_GAZA"
+            test -n "$FIRST_US"
+            test -n "$FIRST_GAZA"
+            test "$FIRST_US" -lt "$FIRST_GAZA"
+            echo "CARD ORDER OK"
+          done
+          echo "BOTH LIVE ADDRESSES VERIFIED"
