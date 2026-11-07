@@ -1,0 +1,26 @@
+name: Verify release asset 1915
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify haq-ki-awaz.html asset via API and hash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          RELEASE_ID=$(gh api repos/haqkiawazpk/haq-ki-awaz/releases/tags/website-nov2026 --jq .id)
+          echo "release_id=$RELEASE_ID"
+          gh api "repos/haqkiawazpk/haq-ki-awaz/releases/$RELEASE_ID/assets?per_page=100" --jq '.[] | select(.name=="haq-ki-awaz.html") | {id, name, size, browser_download_url}'
+          gh api "repos/haqkiawazpk/haq-ki-awaz/releases/$RELEASE_ID/assets?per_page=100" --jq '.[] | select(.name=="haq-ki-awaz-before-1915-7nov2026.html") | {id, name, size}'
+          gh release download website-nov2026 -p haq-ki-awaz.html -D /tmp/verify1915
+          ls -l /tmp/verify1915/haq-ki-awaz.html
+          wc -c /tmp/verify1915/haq-ki-awaz.html
+          sha256sum /tmp/verify1915/haq-ki-awaz.html
+          test "$(sha256sum /tmp/verify1915/haq-ki-awaz.html | cut -d' ' -f1)" = "a9177d032aea53b9f716f5580f8da65efa6eec4e902e37ca222b9dc16915fc65"
+          echo "SHA256 MATCHES EXPECTED"
+          grep -o "pakistan-us-ties-beyond-trump-nov2026" /tmp/verify1915/haq-ki-awaz.html | head -1
+          grep -o "gaza-rain-floods-tents-nov2026" /tmp/verify1915/haq-ki-awaz.html | head -1
