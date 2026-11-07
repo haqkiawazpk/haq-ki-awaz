@@ -16,7 +16,8 @@ jobs:
           echo "release_id=$RELEASE_ID"
           gh api "repos/haqkiawazpk/haq-ki-awaz/releases/$RELEASE_ID/assets?per_page=100" --jq '.[] | select(.name=="haq-ki-awaz.html") | {id, name, size, browser_download_url}'
           gh api "repos/haqkiawazpk/haq-ki-awaz/releases/$RELEASE_ID/assets?per_page=100" --jq '.[] | select(.name=="haq-ki-awaz-before-1915-7nov2026.html") | {id, name, size}'
-          gh release download website-nov2026 -p haq-ki-awaz.html -D /tmp/verify1915
+          mkdir -p /tmp/verify1915
+          curl -L -o /tmp/verify1915/haq-ki-awaz.html "https://github.com/haqkiawazpk/haq-ki-awaz/releases/download/website-nov2026/haq-ki-awaz.html"
           ls -l /tmp/verify1915/haq-ki-awaz.html
           wc -c /tmp/verify1915/haq-ki-awaz.html
           sha256sum /tmp/verify1915/haq-ki-awaz.html
