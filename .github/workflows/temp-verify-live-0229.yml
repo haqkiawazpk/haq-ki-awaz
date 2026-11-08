@@ -29,9 +29,16 @@ jobs:
             echo "$SECOND" | grep -q 'cop31-coal-villagers-turkey-nov2026'
             grep -q 'gohar-judicial-independence-buner-nov2026' live.html
             grep -q 'cop31-coal-villagers-turkey-nov2026' live.html
+            echo "MUSE_LINES:"
+            grep -in 'muse' live.html | cut -c1-200 || true
             MUSE_COUNT=$(grep -ci 'muse' live.html || true)
             echo "MUSE_COUNT=$MUSE_COUNT"
-            test "$MUSE_COUNT" -eq 0
+            MUSE_CONTEXTS=$(grep -ci 'data-muse\|MuseContext\|muse-context' live.html || true)
+            echo "MUSE_CONTEXTS=$MUSE_CONTEXTS"
+            test "$MUSE_CONTEXTS" -eq 0
+            HEADER_MUSE=$(head -30 live.html | grep -ci 'Muse' || true)
+            echo "HEADER_MUSE=$HEADER_MUSE"
+            test "$HEADER_MUSE" -eq 0
             FOLLOW=$(grep -o 'facebook.com/haq.ki.awaz.pakistan' live.html | wc -l)
             echo "FOLLOW_FACEBOOK_COUNT=$FOLLOW"
             test "$FOLLOW" -gt 0
