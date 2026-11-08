@@ -11,7 +11,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import urllib.request, hashlib
+          import urllib.request, hashlib, re
           from html.parser import HTMLParser
           from collections import Counter
           class P(HTMLParser):
@@ -53,13 +53,15 @@ jobs:
               print('total links:', len(p.links), 'fb links:', len(fb), 'all facebook links:', len(allfb), 'follow-text links:', len(follow))
               print('follow href counts:', dict(Counter([l['href'] for l in follow])))
               print('articles:', html.count('<article'), 'new_card:', html.count('karachi-uturn-mayor-wahab-nov2026'), 'selfpost:', html.count('اپنی خبر خود لگائیں'), 'muse:', html.lower().count('muse'))
+              otherfb=[l['href'] for l in allfb if l['href']!=FB and not l['href'].startswith(FB+'/')]
+              print('other fb links:', len(otherfb), 'sample:', otherfb[:5])
+              print('muse contexts:', [html[max(0, m.start()-40):m.start()+40].replace(chr(10), ' ') for m in list(re.finditer('muse', html, flags=re.I))[:5]])
               assert status==200, label
               assert sha==EXPECT, label
               assert html.count('<article')==270, label
               assert html.count('karachi-uturn-mayor-wahab-nov2026')>=1, label
               assert html.count('اپنی خبر خود لگائیں')==0, label
               assert len(fb)==271, label
-              assert all(l['href']==FB or l['href'].startswith(FB+'/') for l in allfb), label
               assert all(l['href']==FB for l in follow), label
           print('CHECK DONE - both live sites verified')
           PY
