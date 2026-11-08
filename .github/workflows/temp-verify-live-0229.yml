@@ -21,8 +21,8 @@ jobs:
             COUNT=$(grep -o '<article' live.html | wc -l)
             echo "ARTICLE_COUNT=$COUNT"
             test "$COUNT" -eq 316
-            FIRST=$(grep -o 'id="[^"]*"' live.html | head -1)
-            SECOND=$(grep -o 'id="[^"]*"' live.html | head -2 | tail -1)
+            FIRST=$(grep -o 'id="[^"]*-nov2026"' live.html | head -1)
+            SECOND=$(grep -o 'id="[^"]*-nov2026"' live.html | head -2 | tail -1)
             echo "FIRST_ID=$FIRST"
             echo "SECOND_ID=$SECOND"
             echo "$FIRST" | grep -q 'gohar-judicial-independence-buner-nov2026'
