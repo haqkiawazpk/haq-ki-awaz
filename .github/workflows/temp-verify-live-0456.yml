@@ -1,4 +1,4 @@
-name: Temp verify live 1930
+name: Temp verify live 2051
 on:
   workflow_dispatch:
 permissions:
@@ -7,7 +7,7 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - name: Verify both live sites return 200, 302 cards, both anchors, Facebook follow links
+      - name: Verify both live sites return 200, 304 cards, both anchors, Facebook follow links
         run: |
           set -e
           for URL in "https://haqkiawazpk.github.io/haq-ki-awaz/" "https://haqkiawazpk.github.io/"; do
@@ -19,12 +19,21 @@ jobs:
             echo "BYTES:"; wc -c live.html
             COUNT=$(grep -o '<article' live.html | wc -l)
             echo "ARTICLE_COUNT=$COUNT"
-            test "$COUNT" -eq 302
+            test "$COUNT" -eq 304
             echo "FIRST_IDS:"; grep -o '<article[^>]*id="[^"]*"' live.html | head -4
-            grep -q 'mashal-yousafzai-imran-release-nov2026' live.html || { echo "MASHAL_ANCHOR=missing"; exit 1; }
-            echo "MASHAL_ANCHOR=present"
-            grep -q 'krakow-mass-shooting-mourning-nov2026' live.html || { echo "KRAKOW_ANCHOR=missing"; exit 1; }
-            echo "KRAKOW_ANCHOR=present"
+            FIRST=$(grep -o '<article[^>]*id="[^"]*"' live.html | head -1)
+            echo "FIRST_ID=$FIRST"
+            echo "$FIRST" | grep -q 'shehbaz-nawaz-jati-umra-nov2026'
+            SECOND=$(grep -o '<article[^>]*id="[^"]*"' live.html | head -2 | tail -1)
+            echo "SECOND_ID=$SECOND"
+            echo "$SECOND" | grep -q 'iran-hormuz-qeshm-blasts-nov2026'
+            grep -q 'shehbaz-nawaz-jati-umra-nov2026' live.html || { echo "SHEHBAZ_ANCHOR=missing"; exit 1; }
+            echo "SHEHBAZ_ANCHOR=present"
+            grep -q 'iran-hormuz-qeshm-blasts-nov2026' live.html || { echo "HORMUZ_ANCHOR=missing"; exit 1; }
+            echo "HORMUZ_ANCHOR=present"
+            MUSE_COUNT=$(grep -o -i 'muse' live.html | wc -l)
+            echo "MUSE_COUNT=$MUSE_COUNT"
+            test "$MUSE_COUNT" -eq 0
             echo "FOLLOW:"; grep -o 'https://www.facebook.com/haq.ki.awaz.pakistan' live.html | wc -l
             FB=$(grep -o 'facebook.com/haq.ki.awaz.pakistan' live.html | wc -l)
             test "$FB" -gt 0
