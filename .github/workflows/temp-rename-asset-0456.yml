@@ -1,0 +1,17 @@
+name: Temp rename release asset 1015
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  rename:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rename haq-ki-awaz.html asset to backup
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ASSET_ID=$(gh api repos/haqkiawazpk/haq-ki-awaz/releases/tags/website-nov2026 --jq '.assets[] | select(.name=="haq-ki-awaz.html") | .id')
+          echo "asset_id=$ASSET_ID"
+          test -n "$ASSET_ID"
+          gh api -X PATCH repos/haqkiawazpk/haq-ki-awaz/releases/assets/$ASSET_ID -f name='haq-ki-awaz-before-1015-8nov2026.html'
