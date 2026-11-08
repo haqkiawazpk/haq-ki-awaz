@@ -1,4 +1,4 @@
-name: Temp verify live 0815
+name: Temp verify live 0915
 on:
   workflow_dispatch:
 permissions:
@@ -10,32 +10,32 @@ jobs:
       - name: Verify both live sites
         run: |
           set -e
-          EXPECTED_SHA=962a9cd619abe7209efeebb343f293588c08b8649b1c07aec17dd546eb4ac923
+          EXPECTED_SHA=f3381f69aeb370bfa69be453cac0d7a847c738254e710208764a89a46da87f53
           for URL in https://haqkiawazpk.github.io/haq-ki-awaz/ https://haqkiawazpk.github.io/; do
             echo "== $URL =="
             curl -fsSL --retry 3 --retry-delay 5 "$URL" -o live.html
             echo "bytes: $(wc -c < live.html)"
             echo "sha256: $(sha256sum live.html)"
             echo "articles: $(grep -o '<article' live.html | wc -l)"
-            echo "first coalition line: $(grep -n 'coalition-electoral-reforms-nominees-nov2026' live.html | head -1)"
-            echo "first us-iran line: $(grep -n 'us-iran-nuclear-reward-20m-nov2026' live.html | head -1)"
-            echo "first karachi-uturn line: $(grep -n 'karachi-uturn-mayor-wahab-nov2026' live.html | head -1)"
+            echo "first bilawal line: $(grep -n 'bilawal-larkana-talks-doors-open-nov2026' live.html | head -1)"
+            echo "first us-task-force line: $(grep -n 'us-task-force-iron-gate-iran-nov2026' live.html | head -1)"
             echo "fuel petrol: $(grep -o 'Rs 346' live.html | head -1)"
             echo "fuel diesel: $(grep -o 'Rs 378' live.html | head -1)"
+            echo "follow links: $(grep -o 'https://www.facebook.com/haq.ki.awaz.pakistan' live.html | wc -l)"
             echo "self-post count: $(grep -c 'اپنی خبر خود لگائیں' live.html || true)"
             echo "muse count: $(grep -ci 'muse' live.html || true)"
-            COALITION_LINE=$(grep -n 'coalition-electoral-reforms-nominees-nov2026' live.html | head -1 | cut -d: -f1)
-            USIRAN_LINE=$(grep -n 'us-iran-nuclear-reward-20m-nov2026' live.html | head -1 | cut -d: -f1)
-            echo "coalition_line=$COALITION_LINE usiran_line=$USIRAN_LINE"
-            test "$COALITION_LINE" -lt "$USIRAN_LINE"
+            BILAWAL_LINE=$(grep -n 'bilawal-larkana-talks-doors-open-nov2026' live.html | head -1 | cut -d: -f1)
+            USTASK_LINE=$(grep -n 'us-task-force-iron-gate-iran-nov2026' live.html | head -1 | cut -d: -f1)
+            echo "bilawal_line=$BILAWAL_LINE ustask_line=$USTASK_LINE"
+            test "$BILAWAL_LINE" -lt "$USTASK_LINE"
             test "$(sha256sum live.html | cut -d' ' -f1)" = "$EXPECTED_SHA"
-            test "$(wc -c < live.html)" = "26815976"
-            test "$(grep -o '<article' live.html | wc -l)" = "280"
-            grep -q 'coalition-electoral-reforms-nominees-nov2026' live.html
-            grep -q 'us-iran-nuclear-reward-20m-nov2026' live.html
-            grep -q 'karachi-uturn-mayor-wahab-nov2026' live.html
+            test "$(wc -c < live.html)" = "26925197"
+            test "$(grep -o '<article' live.html | wc -l)" = "282"
+            grep -q 'bilawal-larkana-talks-doors-open-nov2026' live.html
+            grep -q 'us-task-force-iron-gate-iran-nov2026' live.html
             grep -q 'Rs 346' live.html
             grep -q 'Rs 378' live.html
+            test "$(grep -o 'https://www.facebook.com/haq.ki.awaz.pakistan' live.html | wc -l)" = "283"
             if grep -q 'اپنی خبر خود لگائیں' live.html; then echo "SELF-POST FOUND"; exit 1; fi
             echo "OK $URL"
           done
