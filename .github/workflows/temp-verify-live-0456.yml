@@ -1,4 +1,4 @@
-name: Temp verify live 1015
+name: Temp verify live 1851
 on:
   workflow_dispatch:
 permissions:
@@ -7,23 +7,25 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - name: Verify project Pages URL
+      - name: Verify both live sites return 200, 300 cards, both anchors, Facebook follow links
         run: |
-          URL="https://haqkiawazpk.github.io/haq-ki-awaz/"
-          curl -fsSL "$URL" -o live.html
-          echo "SHA256:"; sha256sum live.html
-          echo "BYTES:"; wc -c live.html
-          echo "ARTICLES:"; grep -o '<article' live.html | wc -l
-          echo "FIRST_IDS:"; grep -o '<article[^>]*id="[^"]*"' live.html | head -4
-          echo "FIRST_ANCHORS:"; grep -o 'href="/[^"]*-nov2026/"' live.html | head -2
-          echo "HREF_NOV2026:"; grep -o 'href="[^"]*nov2026[^"]*"' live.html | head -4
-          echo "FOLLOW:"; grep -o 'https://www.facebook.com/haq.ki.awaz.pakistan' live.html | wc -l
-          echo "FUEL_RS346:"; grep -o 'Rs346' live.html | wc -l
-          echo "FUEL_RS378:"; grep -o 'Rs378' live.html | wc -l
-          echo "SELFPOST_1015:"; grep -o 'haq-ki-awaz-before-1015-8nov2026.html' live.html | wc -l
-          echo "EXPECTED_SHA=f018a0220f9325616f54cb9ccdcc9584010e9268e33cc9ee4458fbe395fa7829"
-          echo "EXPECTED_BYTES=28450969"
-          echo "EXPECTED_ARTICLES=284"
-          echo "EXPECTED_FOLLOW=285"
-          echo "EXPECTED_FIRST1=href=\"/sc-acquits-brothers-blasphemy-20-years-nov2026/\""
-          echo "EXPECTED_FIRST2=href=\"/uae-rescues-22-crew-oman-ship-fire-nov2026/\""
+          set -e
+          for URL in "https://haqkiawazpk.github.io/haq-ki-awaz/" "https://haqkiawazpk.github.io/"; do
+            echo "=== $URL ==="
+            STATUS=$(curl -s -o live.html -w "%{http_code}" "$URL")
+            echo "HTTP_STATUS=$STATUS"
+            test "$STATUS" = "200"
+            echo "SHA256:"; sha256sum live.html
+            echo "BYTES:"; wc -c live.html
+            COUNT=$(grep -o '<article' live.html | wc -l)
+            echo "ARTICLE_COUNT=$COUNT"
+            test "$COUNT" -eq 300
+            echo "FIRST_IDS:"; grep -o '<article[^>]*id="[^"]*"' live.html | head -4
+            grep -q 'khawaja-asif-new-provinces-12-nov2026' live.html || { echo "KHAWAJA_ANCHOR=missing"; exit 1; }
+            echo "KHAWAJA_ANCHOR=present"
+            grep -q 'remembrance-sunday-cenotaph-king-nov2026' live.html || { echo "REMEMBRANCE_ANCHOR=missing"; exit 1; }
+            echo "REMEMBRANCE_ANCHOR=present"
+            echo "FOLLOW:"; grep -o 'https://www.facebook.com/haq.ki.awaz.pakistan' live.html | wc -l
+            FB=$(grep -o 'facebook.com/haq.ki.awaz.pakistan' live.html | wc -l)
+            test "$FB" -gt 0
+          done
