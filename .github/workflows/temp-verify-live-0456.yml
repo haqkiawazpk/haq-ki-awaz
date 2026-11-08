@@ -1,0 +1,41 @@
+name: Temp verify live 0456
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify both live sites
+        run: |
+          set -e
+          EXPECTED_SHA=4b7852027a40ba3467d6e40a34d687650ec58fe0a173f3393f3f785fd5abae23
+          for URL in https://haqkiawazpk.github.io/haq-ki-awaz/ https://haqkiawazpk.github.io/; do
+            echo "== $URL =="
+            curl -fsSL --retry 3 --retry-delay 5 "$URL" -o live.html
+            echo "bytes: $(wc -c < live.html)"
+            echo "sha256: $(sha256sum live.html)"
+            echo "articles: $(grep -o '<article' live.html | wc -l)"
+            echo "first phc line: $(grep -n 'phc-petitions-struck-off-nov2026' live.html | head -1)"
+            echo "first italy line: $(grep -n 'italy-tajani-hackers-nov2026' live.html | head -1)"
+            echo "first karachi-uturn line: $(grep -n 'karachi-uturn-mayor-wahab-nov2026' live.html | head -1)"
+            echo "fuel petrol: $(grep -o 'Rs 346' live.html | head -1)"
+            echo "fuel diesel: $(grep -o 'Rs 378' live.html | head -1)"
+            echo "self-post count: $(grep -c 'اپنی خبر خود لگائیں' live.html || true)"
+            echo "muse count: $(grep -ci 'muse' live.html || true)"
+            PHC_LINE=$(grep -n 'phc-petitions-struck-off-nov2026' live.html | head -1 | cut -d: -f1)
+            ITALY_LINE=$(grep -n 'italy-tajani-hackers-nov2026' live.html | head -1 | cut -d: -f1)
+            echo "phc line=$PHC_LINE italy line=$ITALY_LINE"
+            test "$PHC_LINE" -lt "$ITALY_LINE"
+            test "$(sha256sum live.html | cut -d' ' -f1)" = "$EXPECTED_SHA"
+            test "$(wc -c < live.html)" = "21795210"
+            test "$(grep -o '<article' live.html | wc -l)" = "272"
+            grep -q 'phc-petitions-struck-off-nov2026' live.html
+            grep -q 'italy-tajani-hackers-nov2026' live.html
+            grep -q 'karachi-uturn-mayor-wahab-nov2026' live.html
+            grep -q 'Rs 346' live.html
+            grep -q 'Rs 378' live.html
+            if grep -q 'اپنی خبر خود لگائیں' live.html; then echo "SELF-POST FOUND"; exit 1; fi
+            echo "OK $URL"
+          done
