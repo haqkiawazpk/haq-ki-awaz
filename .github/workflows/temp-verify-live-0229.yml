@@ -1,0 +1,42 @@
+name: Temp verify live 0229
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-live:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify both live Pages URLs
+        run: |
+          set -e
+          for URL in "https://haqkiawazpk.github.io/haq-ki-awaz/" "https://haqkiawazpk.github.io/"; do
+            echo "=== $URL ==="
+            STATUS=$(curl -s -o live.html -w "%{http_code}" -L --max-time 120 "$URL")
+            echo "STATUS=$STATUS"
+            test "$STATUS" = "200"
+            echo "BYTES=$(wc -c < live.html)"
+            echo "SHA256=$(sha256sum live.html | cut -d' ' -f1)"
+            test "$(sha256sum live.html | cut -d' ' -f1)" = "abb7f1ee88ca77a4e1c642c5d57e05a23643a97bd0b8d938fc9979bdc8ebb5b8"
+            COUNT=$(grep -o '<article' live.html | wc -l)
+            echo "ARTICLE_COUNT=$COUNT"
+            test "$COUNT" -eq 316
+            FIRST=$(grep -o 'id="[^"]*"' live.html | head -1)
+            SECOND=$(grep -o 'id="[^"]*"' live.html | head -2 | tail -1)
+            echo "FIRST_ID=$FIRST"
+            echo "SECOND_ID=$SECOND"
+            echo "$FIRST" | grep -q 'gohar-judicial-independence-buner-nov2026'
+            echo "$SECOND" | grep -q 'cop31-coal-villagers-turkey-nov2026'
+            grep -q 'gohar-judicial-independence-buner-nov2026' live.html
+            grep -q 'cop31-coal-villagers-turkey-nov2026' live.html
+            MUSE_COUNT=$(grep -ci 'muse' live.html || true)
+            echo "MUSE_COUNT=$MUSE_COUNT"
+            test "$MUSE_COUNT" -eq 0
+            FOLLOW=$(grep -o 'facebook.com/haq.ki.awaz.pakistan' live.html | wc -l)
+            echo "FOLLOW_FACEBOOK_COUNT=$FOLLOW"
+            test "$FOLLOW" -gt 0
+            SELFPOST=$(grep -c 'اپنی خبر خود لگائیں' live.html || true)
+            echo "SELFPOST_COUNT=$SELFPOST"
+            test "$SELFPOST" -eq 0
+          done
+          echo "ALL LIVE CHECKS PASSED"
