@@ -1,4 +1,4 @@
-name: Temp verify live 1851
+name: Temp verify live 1930
 on:
   workflow_dispatch:
 permissions:
@@ -7,7 +7,7 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - name: Verify both live sites return 200, 300 cards, both anchors, Facebook follow links
+      - name: Verify both live sites return 200, 302 cards, both anchors, Facebook follow links
         run: |
           set -e
           for URL in "https://haqkiawazpk.github.io/haq-ki-awaz/" "https://haqkiawazpk.github.io/"; do
@@ -19,12 +19,12 @@ jobs:
             echo "BYTES:"; wc -c live.html
             COUNT=$(grep -o '<article' live.html | wc -l)
             echo "ARTICLE_COUNT=$COUNT"
-            test "$COUNT" -eq 300
+            test "$COUNT" -eq 302
             echo "FIRST_IDS:"; grep -o '<article[^>]*id="[^"]*"' live.html | head -4
-            grep -q 'khawaja-asif-new-provinces-12-nov2026' live.html || { echo "KHAWAJA_ANCHOR=missing"; exit 1; }
-            echo "KHAWAJA_ANCHOR=present"
-            grep -q 'remembrance-sunday-cenotaph-king-nov2026' live.html || { echo "REMEMBRANCE_ANCHOR=missing"; exit 1; }
-            echo "REMEMBRANCE_ANCHOR=present"
+            grep -q 'mashal-yousafzai-imran-release-nov2026' live.html || { echo "MASHAL_ANCHOR=missing"; exit 1; }
+            echo "MASHAL_ANCHOR=present"
+            grep -q 'krakow-mass-shooting-mourning-nov2026' live.html || { echo "KRAKOW_ANCHOR=missing"; exit 1; }
+            echo "KRAKOW_ANCHOR=present"
             echo "FOLLOW:"; grep -o 'https://www.facebook.com/haq.ki.awaz.pakistan' live.html | wc -l
             FB=$(grep -o 'facebook.com/haq.ki.awaz.pakistan' live.html | wc -l)
             test "$FB" -gt 0
