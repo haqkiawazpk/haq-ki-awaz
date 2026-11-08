@@ -1,4 +1,4 @@
-name: Temp rename release asset 2315
+name: Temp rename release asset 0425-9nov
 on:
   workflow_dispatch:
 permissions:
@@ -14,4 +14,5 @@ jobs:
           ASSET_ID=$(gh api repos/haqkiawazpk/haq-ki-awaz/releases/tags/website-nov2026 --jq '.assets[] | select(.name=="haq-ki-awaz.html") | .id')
           echo "asset_id=$ASSET_ID"
           test -n "$ASSET_ID"
-          gh api -X PATCH repos/haqkiawazpk/haq-ki-awaz/releases/assets/$ASSET_ID -f name='haq-ki-awaz-before-2315-8nov2026.html'
+          gh api -X PATCH repos/haqkiawazpk/haq-ki-awaz/releases/assets/$ASSET_ID -f name='haq-ki-awaz-before-0425-9nov2026.html'
+          echo "OLD_NAME=haq-ki-awaz.html NEW_NAME=haq-ki-awaz-before-0425-9nov2026.html"
