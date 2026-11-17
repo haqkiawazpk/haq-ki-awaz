@@ -1,0 +1,55 @@
+name: Temp verify live 1930
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-live:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify both live Pages URLs
+        run: |
+          set -e
+          for URL in "https://haqkiawazpk.github.io/haq-ki-awaz" "https://haqkiawazpk.github.io/"; do
+            echo "=== $URL ==="
+            STATUS=$(curl -s -o live.html -w "%{http_code}" -L --max-time 120 "$URL")
+            echo "STATUS=$STATUS"
+            test "$STATUS" = "200"
+            BYTES=$(wc -c < live.html)
+            echo "BYTES=$BYTES"
+            test "$BYTES" -eq 26896488
+            echo "SHA256=$(sha256sum live.html | cut -d' ' -f1)"
+            test "$(sha256sum live.html | cut -d' ' -f1)" = "f0d842a26c07a03085c953ce3c30673793183f3069f01ef2790f88ff3e9247ad"
+            COUNT=$(grep -o '<article' live.html | wc -l)
+            echo "ARTICLE_COUNT=$COUNT"
+            test "$COUNT" -eq 743
+            FIRST=$(grep -o 'id="[^"]*-nov2026"' live.html | head -1)
+            SECOND=$(grep -o 'id="[^"]*-nov2026"' live.html | head -2 | tail -1)
+            echo "FIRST_ID=$FIRST"
+            echo "SECOND_ID=$SECOND"
+            test "$FIRST" = 'id="kp-gold-mining-jit-probe-nov2026"'
+            test "$SECOND" = 'id="gaza-four-killed-deir-balah-khan-younis-nov2026"'
+            echo "ID_KP_COUNT=$(grep -o 'id="kp-gold-mining-jit-probe-nov2026"' live.html | wc -l)"
+            echo "ID_GAZA_COUNT=$(grep -o 'id="gaza-four-killed-deir-balah-khan-younis-nov2026"' live.html | wc -l)"
+            test "$(grep -o 'id="kp-gold-mining-jit-probe-nov2026"' live.html | wc -l)" -eq 1
+            test "$(grep -o 'id="gaza-four-killed-deir-balah-khan-younis-nov2026"' live.html | wc -l)" -eq 1
+            grep -q 'kp-gold-mining-jit-probe-nov2026' live.html
+            grep -q 'gaza-four-killed-deir-balah-khan-younis-nov2026' live.html
+            echo "MUSE_LINES"
+            grep -in 'muse' live.html | cut -c1-200 || true
+            MUSE_COUNT=$(grep -ci 'muse' live.html || true)
+            echo "MUSE_COUNT=$MUSE_COUNT"
+            MUSE_CONTEXTS=$(grep -ci 'data-muse\|MuseContext\|muse-context' live.html || true)
+            echo "MUSE_CONTEXTS=$MUSE_CONTEXTS"
+            test "$MUSE_CONTEXTS" -eq 0
+            HEADER_MUSE=$(head -30 live.html | grep -ci 'Muse' || true)
+            echo "HEADER_MUSE=$HEADER_MUSE"
+            test "$HEADER_MUSE" -eq 0
+            FOLLOW=$(grep -o 'facebook.com/haq.ki.awaz.pakistan' live.html | wc -l)
+            echo "FOLLOW_FACEBOOK_COUNT=$FOLLOW"
+            test "$FOLLOW" -gt 0
+            SELFPOST=$(grep -c 'اپنی خبر خود لکھیں' live.html || true)
+            echo "SELFPOST_COUNT=$SELFPOST"
+            test "$SELFPOST" -eq 0
+          done
+          echo "ALL LIVE CHECKS PASSED"
