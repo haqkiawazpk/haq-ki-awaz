@@ -1,0 +1,19 @@
+name: Temp restore backup 2241
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore previous index into backup file
+        run: |
+          git config user.name "haqkiawazpk"
+          git config user.email "haqkiawazpk@users.noreply.github.com"
+          git show 19cbc69:index.html > haq-ki-awaz-before-2234-20nov2026.html
+          test -s haq-ki-awaz-before-2234-20nov2026.html
+          git add haq-ki-awaz-before-2234-20nov2026.html
+          git diff --cached --quiet || git commit -m "Restore previous index.html content into haq-ki-awaz-before-2234-20nov2026.html"
+          git push
