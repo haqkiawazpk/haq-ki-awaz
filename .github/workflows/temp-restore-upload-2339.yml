@@ -8,6 +8,8 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Restore haq-ki-awaz-upload.html from 134f66c
         run: |
           git checkout 134f66c -- haq-ki-awaz-upload.html
