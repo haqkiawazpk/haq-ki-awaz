@@ -1,0 +1,23 @@
+name: Restore backup 2027
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Restore old index into backup file
+        run: |
+          git show 92dc995:index.html > haq-ki-awaz-before-2027-27nov2026.html
+          ls -l haq-ki-awaz-before-2027-27nov2026.html
+      - name: Commit backup
+        run: |
+          git config user.name "haqkiawazpk"
+          git config user.email "haqkiawazpk@users.noreply.github.com"
+          git add haq-ki-awaz-before-2027-27nov2026.html
+          git diff --cached --quiet || git commit -m "Restore backup haq-ki-awaz-before-2027-27nov2026.html from previous index.html (1222 cards)"
+          git push
